@@ -1,0 +1,17 @@
+---
+title: "Basic Statistical Analysis of Severe Weather Events in the United States"
+output: 
+  html_document:
+    keep_md: true
+---
+
+## Synopsis
+
+## Data Processing
+
+Data was downloaded from https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2 at 2015-03-12 and uncompressed with bzip2.
+
+```{r}
+```
+
+## Results
