@@ -5,6 +5,21 @@ output:
     keep_md: true
 ---
 
+# TODO
+
+Multiply damages by magnitude (*EXP).
+
+Pick top ten events to plot.
+
+Have panel plots for population and property:
+- single-value bar plots for both sum and mean of fatalities in a panel plot
+- single-value bar plots for both sum and mean of injuries in a panel plot
+- additive sum & mean panel plot for sum and mean of property+crop damages
+
+Write short analysis.
+
+Update synopsis.
+
 ## Synopsis
 
 This study uses NOAA Storm Database's data to find out what types events are most harmful to population's health and the types that cause most economical damage across the United States.  
@@ -18,24 +33,22 @@ Analysis is carried out with R's data.table and ggplot libraries.
 ```{r}
 library(data.table)
 library(ggplot2)
+library(reshape2)
 ```
 
-To answer the first question about effect on populations health, the data is aggregated by event types by calculating sum, mean and median of fatalities and injuries.
+To answer the first question about effect on populations health, the data is aggregated by event types by calculating maximum, sum, mean and median of fatalities and injuries.
 ```{r cache=TRUE}
 csv <- read.csv(file = 'repdata_data_StormData.csv')
 fatalitiesAndInjuriesSumByEventType <- aggregate(. ~ EVTYPE, data=csv[,c('EVTYPE', 'FATALITIES', 'INJURIES')], FUN=sum)
 fatalitiesAndInjuriesMeanByEventType <- aggregate(. ~ EVTYPE, data=csv[,c('EVTYPE', 'FATALITIES', 'INJURIES')], FUN=mean)
-fatalitiesAndInjuriesMedianByEventType <- aggregate(. ~ EVTYPE, data=csv[,c('EVTYPE', 'FATALITIES', 'INJURIES')], FUN=median)
 ```
 
-Finally events without fatalities and injuries are filtered out to make reading the results simpler.
+Finally events without fatalities and injuries are filtered out to make plotting the results simpler.
 ```{r cache=TRUE}
 fatalitiesAndInjuriesSumByEventType <- fatalitiesAndInjuriesSumByEventType[
   fatalitiesAndInjuriesSumByEventType$FATALITIES > 0 | fatalitiesAndInjuriesSumByEventType$INJURIES > 0,] 
 fatalitiesAndInjuriesMeanByEventType <- fatalitiesAndInjuriesMeanByEventType[
   fatalitiesAndInjuriesMeanByEventType$FATALITIES > 0 | fatalitiesAndInjuriesMeanByEventType$INJURIES > 0,] 
-fatalitiesAndInjuriesMedianByEventType <- fatalitiesAndInjuriesMedianByEventType[
-  fatalitiesAndInjuriesMedianByEventType$FATALITIES > 0 | fatalitiesAndInjuriesMedianByEventType$INJURIES > 0,] 
 ```
 
 When investigating storms' economical impact, the same aggregation is carried over property and crop damage expenditures.
@@ -43,7 +56,6 @@ When investigating storms' economical impact, the same aggregation is carried ov
 ```{r cache=TRUE}
 damagesSumByEventType <- aggregate(. ~ EVTYPE, data=csv[,c('EVTYPE', 'PROPDMGEXP', 'CROPDMGEXP')], FUN=sum)
 damagesMeanByEventType <- aggregate(. ~ EVTYPE, data=csv[,c('EVTYPE', 'PROPDMGEXP', 'CROPDMGEXP')], FUN=mean)
-damagesMedianByEventType <- aggregate(. ~ EVTYPE, data=csv[,c('EVTYPE', 'PROPDMGEXP', 'CROPDMGEXP')], FUN=median)
 ```
 
 ```{r cache=TRUE}
@@ -51,8 +63,19 @@ damagesSumByEventType <- damagesSumByEventType[
   damagesSumByEventType$PROPDMGEXP > 0 | damagesSumByEventType$CROPDMGEXP > 0,] 
 damagesMeanByEventType <- damagesMeanByEventType[
   damagesMeanByEventType$PROPDMGEXP > 0 | damagesMeanByEventType$CROPDMGEXP > 0,] 
-damagesMedianByEventType <- damagesMedianByEventType[
-  damagesMedianByEventType$PROPDMGEXP > 0 | damagesMedianByEventType$CROPDMGEXP > 0,] 
 ```
 
 ## Results
+
+### Personnel Damages
+
+Maximums of personnel damages are visualized in following plot.
+```{r}
+# personnelMaximums <- melt(fatalitiesAndInjuriesMaxByEventType)
+# plot <- ggplot(personnelMaximums, aes(x=EVTYPE, Y=value)) + geom_bar(position="dodge")
+# print(plot)
+```
+
+### Property Damages
+
+### Conclusions
