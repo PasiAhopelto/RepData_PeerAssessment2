@@ -44,12 +44,15 @@ fatalitiesAndInjuriesMeanByEventType <- aggregate(. ~ EVTYPE, data=csv[,c('EVTYP
 Top ten event types by fatalities and injuries are handled separately.
 ```{r cache=TRUE}
 pickTopTen <- function(data, columnIndex) {
-  head(data[order(data[,c(columnIndex)]),], 10)
+  head(data[order(-data[,c(columnIndex)]),], 10)
 }
 topFatalitiesSumByEventType <- pickTopTen(fatalitiesAndInjuriesSumByEventType, 2)
 topInjuriesSumByEventType <- pickTopTen(fatalitiesAndInjuriesSumByEventType, 3)
 topFatalitiesMeanByEventType <- pickTopTen(fatalitiesAndInjuriesMeanByEventType, 2)
 topInjuriesMeanByEventType <- pickTopTen(fatalitiesAndInjuriesMeanByEventType, 3)
+```
+
+```{r}
 ```
 
 While investigating storms' economical impact, the same aggregation is carried over property and crop damage expenditures after multiplying costs by respective exponent.
@@ -74,15 +77,20 @@ topDamagesByEventType <- pickTopTen(damagesSumByEventType, 4)
 
 ### Personnel Damages
 
-*TODO* Fix data
-
 ```{r}
 head(topFatalitiesSumByEventType)
+head(topFatalitiesMeanByEventType)
+head(topInjuriesSumByEventType)
+head(topInjuriesMeanByEventType)
 ```
 
+**TODO**
+- order by y values
+- coord_flip()
+
 ```{r}
-fatalitiesSumPlot <- ggplot(topFatalitiesSumByEventType, aes(y=FATALITIES, x=EVTYPE)) + geom_bar() + ggtitle("Top events by sum of fatalities")
-injuriesSumPlot <- ggplot(topInjuriesSumByEventType, aes(y=INJURIES, x=EVTYPE)) + geom_bar() + ggtitle("Top events by sum of injuries")
+fatalitiesSumPlot <- ggplot(topFatalitiesSumByEventType[,c('EVTYPE', 'FATALITIES')], aes(x=EVTYPE, y=FATALITIES)) + geom_bar(stat="identity") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+injuriesSumPlot <- ggplot(topInjuriesSumByEventType[,c('EVTYPE', 'INJURIES')], aes(x=EVTYPE, y=INJURIES)) + geom_bar(stat="identity")  + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 layout <- matrix(seq(1, 2), ncol = 1, nrow = 2)
 grid.newpage()
 pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
