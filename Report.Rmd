@@ -7,18 +7,13 @@ output:
 
 # TODO
 
-Have panel plots for population and property:
-- single-value bar plots for both sum and mean of fatalities in a panel plot
-- single-value bar plots for both sum and mean of injuries in a panel plot
-- additive sum & mean panel plot for sum and mean of property+crop damages
+Finalize.
 
-Write short analysis.
-
-Update synopsis.
+Change plots' labels.
 
 ## Synopsis
 
-This study uses NOAA Storm Database's data to find out what types events are most harmful to population's health and the types that cause most economical damage across the United States.
+This study uses NOAA Storm Database's data to find out what types events are most harmful to population's health and the types that cause most economical damage across the United States. The study is an assignment from Reproducible Research course by Roger D. Peng, Jeff Leek and Brian Caffo (Johns Hopkins University / Coursera).
 
 ## Data Processing
 
@@ -70,27 +65,21 @@ Top ten event types by economical damages caused by storms are sorted by sum of 
 
 ```{r cache=TRUE}
 damagesSumByEventType$SUM <- damagesSumByEventType$PROPDMG + damagesSumByEventType$CROPDMG
-topDamagesByEventType <- pickTopTen(damagesSumByEventType, 4)
+damagesMeanByEventType$MEAN <- damagesMeanByEventType$PROPDMG + damagesMeanByEventType$CROPDMG
+
+topDamagesSumByEventType <- pickTopTen(damagesSumByEventType, 4)
+topDamagesMeanByEventType <- pickTopTen(damagesMeanByEventType, 4)
 ```
 
 ## Results
 
 ### Personnel Damages
 
-```{r}
-head(topFatalitiesSumByEventType)
-head(topFatalitiesMeanByEventType)
-head(topInjuriesSumByEventType)
-head(topInjuriesMeanByEventType)
-```
-
-**TODO**
-- order by y values
-- coord_flip()
+First total number of personnel damages is inspected by plotting top ten causes of deaths and injuries as sum by event type.
 
 ```{r}
-fatalitiesSumPlot <- ggplot(topFatalitiesSumByEventType[,c('EVTYPE', 'FATALITIES')], aes(x=EVTYPE, y=FATALITIES)) + geom_bar(stat="identity") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-injuriesSumPlot <- ggplot(topInjuriesSumByEventType[,c('EVTYPE', 'INJURIES')], aes(x=EVTYPE, y=INJURIES)) + geom_bar(stat="identity")  + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+fatalitiesSumPlot <- ggplot(topFatalitiesSumByEventType[,c('EVTYPE', 'FATALITIES')], aes(x=EVTYPE, y=FATALITIES)) + geom_bar(stat="identity") + coord_flip()
+injuriesSumPlot <- ggplot(topInjuriesSumByEventType[,c('EVTYPE', 'INJURIES')], aes(x=EVTYPE, y=INJURIES)) + geom_bar(stat="identity")  + coord_flip()
 layout <- matrix(seq(1, 2), ncol = 1, nrow = 2)
 grid.newpage()
 pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
@@ -98,6 +87,34 @@ print(fatalitiesSumPlot, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
 print(injuriesSumPlot, vp = viewport(layout.pos.row = 2, layout.pos.col = 1))
 ```
 
-### Property Damages
+Then the personnel damages are inspected by plotting mean of top ten causes of deaths and injuries as mean by event type.
 
-### Conclusions
+```{r}
+fatalitiesMeanPlot <- ggplot(topFatalitiesMeanByEventType[,c('EVTYPE', 'FATALITIES')], aes(x=EVTYPE, y=FATALITIES)) + geom_bar(stat="identity") + coord_flip()
+injuriesMeanPlot <- ggplot(topInjuriesMeanByEventType[,c('EVTYPE', 'INJURIES')], aes(x=EVTYPE, y=INJURIES)) + geom_bar(stat="identity")  + coord_flip()
+layout <- matrix(seq(1, 2), ncol = 1, nrow = 2)
+grid.newpage()
+pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+print(fatalitiesMeanPlot, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
+print(injuriesMeanPlot, vp = viewport(layout.pos.row = 2, layout.pos.col = 1))
+```
+
+From the plots is very easy to see that tornadoes are main cause of fatalities and injuries. They have highest effect on health when viewed as sum and mean. However, also extreme heat causes high number of fatalities, about one third compared to tornadoes. 
+
+When investigating mean values by event type, cold and snow becomes second to tornadoes by reaching slightly over half of their fatality level. Somewhat surprisingly heat wave is clearly most significant cause of injuries by singular event. Obviously tornadoes are more numerous than "cold and snow" or "heat wave" that cause injuries or fatalities.
+
+### Damages
+
+Damages are investigates by plotting sum and mean of combined property and crop damages by top ten event types.
+
+```{r}
+damagesSumPlot <- ggplot(topDamagesSumByEventType[,c('EVTYPE', 'SUM')], aes(x=EVTYPE, y=SUM)) + geom_bar(stat="identity") + coord_flip()
+damagesMeanPlot <- ggplot(topDamagesMeanByEventType[,c('EVTYPE', 'MEAN')], aes(x=EVTYPE, y=MEAN)) + geom_bar(stat="identity") + coord_flip()
+layout <- matrix(seq(1, 2), ncol = 1, nrow = 2)
+grid.newpage()
+pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+print(damagesSumPlot, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
+print(damagesMeanPlot, vp = viewport(layout.pos.row = 2, layout.pos.col = 1))
+```
+
+Floods clearly cause majority of damages, but on average tornadoes are more damaging to economy; floods accumulate damage by their numbers. The statistics could be analysed further by location of the events, for example do floods repeatedly concentrate on single areas and whether it would be feasible to prevent damages by building flood barries or safe overflow areas.
