@@ -9,8 +9,6 @@ output:
 
 Finalize.
 
-Change plots' labels.
-
 ## Synopsis
 
 This study uses NOAA Storm Database's data to find out what types events are most harmful to population's health and the types that cause most economical damage across the United States. The study is an assignment from Reproducible Research course by Roger D. Peng, Jeff Leek and Brian Caffo (Johns Hopkins University / Coursera).
@@ -78,8 +76,8 @@ topDamagesMeanByEventType <- pickTopTen(damagesMeanByEventType, 4)
 First total number of personnel damages is inspected by plotting top ten causes of deaths and injuries as sum by event type.
 
 ```{r}
-fatalitiesSumPlot <- ggplot(topFatalitiesSumByEventType[,c('EVTYPE', 'FATALITIES')], aes(x=EVTYPE, y=FATALITIES)) + geom_bar(stat="identity") + coord_flip()
-injuriesSumPlot <- ggplot(topInjuriesSumByEventType[,c('EVTYPE', 'INJURIES')], aes(x=EVTYPE, y=INJURIES)) + geom_bar(stat="identity")  + coord_flip()
+fatalitiesSumPlot <- ggplot(topFatalitiesSumByEventType[,c('EVTYPE', 'FATALITIES')], aes(x=EVTYPE, y=FATALITIES)) + geom_bar(stat="identity") + coord_flip() + ylab('Fatalities (sum)') + xlab('')
+injuriesSumPlot <- ggplot(topInjuriesSumByEventType[,c('EVTYPE', 'INJURIES')], aes(x=EVTYPE, y=INJURIES)) + geom_bar(stat="identity")  + coord_flip() + ylab('Injuries (sum)') + xlab('')
 layout <- matrix(seq(1, 2), ncol = 1, nrow = 2)
 grid.newpage()
 pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
@@ -90,8 +88,8 @@ print(injuriesSumPlot, vp = viewport(layout.pos.row = 2, layout.pos.col = 1))
 Then the personnel damages are inspected by plotting mean of top ten causes of deaths and injuries as mean by event type.
 
 ```{r}
-fatalitiesMeanPlot <- ggplot(topFatalitiesMeanByEventType[,c('EVTYPE', 'FATALITIES')], aes(x=EVTYPE, y=FATALITIES)) + geom_bar(stat="identity") + coord_flip()
-injuriesMeanPlot <- ggplot(topInjuriesMeanByEventType[,c('EVTYPE', 'INJURIES')], aes(x=EVTYPE, y=INJURIES)) + geom_bar(stat="identity")  + coord_flip()
+fatalitiesMeanPlot <- ggplot(topFatalitiesMeanByEventType[,c('EVTYPE', 'FATALITIES')], aes(x=EVTYPE, y=FATALITIES)) + geom_bar(stat="identity") + coord_flip() + ylab('Fatalities (mean)') + xlab('')
+injuriesMeanPlot <- ggplot(topInjuriesMeanByEventType[,c('EVTYPE', 'INJURIES')], aes(x=EVTYPE, y=INJURIES)) + geom_bar(stat="identity")  + coord_flip() + ylab('Injuries (mean)') + xlab('')
 layout <- matrix(seq(1, 2), ncol = 1, nrow = 2)
 grid.newpage()
 pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
@@ -108,8 +106,8 @@ When investigating mean values by event type, cold and snow becomes second to to
 Damages are investigates by plotting sum and mean of combined property and crop damages by top ten event types.
 
 ```{r}
-damagesSumPlot <- ggplot(topDamagesSumByEventType[,c('EVTYPE', 'SUM')], aes(x=EVTYPE, y=SUM)) + geom_bar(stat="identity") + coord_flip()
-damagesMeanPlot <- ggplot(topDamagesMeanByEventType[,c('EVTYPE', 'MEAN')], aes(x=EVTYPE, y=MEAN)) + geom_bar(stat="identity") + coord_flip()
+damagesSumPlot <- ggplot(topDamagesSumByEventType[,c('EVTYPE', 'SUM')], aes(x=EVTYPE, y=SUM)) + geom_bar(stat="identity") + coord_flip() + ylab('Damages (sum)') + xlab('')
+damagesMeanPlot <- ggplot(topDamagesMeanByEventType[,c('EVTYPE', 'MEAN')], aes(x=EVTYPE, y=MEAN)) + geom_bar(stat="identity") + coord_flip() + ylab('Damages (mean)') + xlab('')
 layout <- matrix(seq(1, 2), ncol = 1, nrow = 2)
 grid.newpage()
 pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
