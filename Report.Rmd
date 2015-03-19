@@ -11,8 +11,6 @@ This study uses NOAA Storm Database's data to find out what types of events are 
 
 ## Data Processing
 
-Data was downloaded from https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2 at 2015-03-12, uncompressed with bzip2 and analysis was carried out with R by using following libraries.
-
 ```{r}
 library(data.table)
 library(ggplot2)
@@ -21,9 +19,9 @@ library(plyr)
 library(grid)
 ```
 
-To answer the question about effect on populations health, the data is aggregated by event types by calculating sums of fatalities and injuries.
+Data was downloaded from https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2 at 2015-03-12. To answer the question about effect on populations health, the data is aggregated by event types by calculating sums of fatalities and injuries.
 ```{r cache=TRUE}
-csv <- read.csv(file = 'repdata_data_StormData.csv')
+csv <- read.csv(file = 'repdata_data_StormData.csv.bz2')
 fatalitiesAndInjuriesSumByEventType <- aggregate(. ~ EVTYPE, data=csv[,c('EVTYPE', 'FATALITIES', 'INJURIES')], FUN=sum)
 ```
 

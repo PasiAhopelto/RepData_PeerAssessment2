@@ -1,7 +1,7 @@
 .Rproj.user
 .Rhistory
 .RData
-repdata_data_StormData.csv
+repdata_data_StormData.csv.bz2
 Report.html
 Report.md
 RepData_PeerAssessment2.Rproj
