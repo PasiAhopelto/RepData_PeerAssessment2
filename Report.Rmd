@@ -5,19 +5,13 @@ output:
     keep_md: true
 ---
 
-# TODO
-
-Finalize.
-
 ## Synopsis
 
-This study uses NOAA Storm Database's data to find out what types events are most harmful to population's health and the types that cause most economical damage across the United States. The study is an assignment from Reproducible Research course by Roger D. Peng, Jeff Leek and Brian Caffo (Johns Hopkins University / Coursera).
+This study uses NOAA Storm Database's data to find out what types of events are most harmful to population's health and the types that cause most economical damage across the United States. Main findings are that tornadoes are most damaging health-wise, while floods have greatest economical impact. Also events that have high health effect are less severe on property damages, and vice-versa. The study is an assignment for course Reproducible Research by Roger D. Peng, Jeff Leek and Brian Caffo (Johns Hopkins University / Coursera).
 
 ## Data Processing
 
-Data was downloaded from https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2 at 2015-03-12 and uncompressed with bzip2.
-
-Analysis is carried out with R's libraries.
+Data was downloaded from https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2 at 2015-03-12, uncompressed with bzip2 and analysis was carried out with R by using following libraries.
 
 ```{r}
 library(data.table)
@@ -27,28 +21,23 @@ library(plyr)
 library(grid)
 ```
 
-To answer the first question about effect on populations health, the data is aggregated by event types by calculating sum and mean of fatalities and injuries.
+To answer the question about effect on populations health, the data is aggregated by event types by calculating sums of fatalities and injuries.
 ```{r cache=TRUE}
 csv <- read.csv(file = 'repdata_data_StormData.csv')
 fatalitiesAndInjuriesSumByEventType <- aggregate(. ~ EVTYPE, data=csv[,c('EVTYPE', 'FATALITIES', 'INJURIES')], FUN=sum)
-fatalitiesAndInjuriesMeanByEventType <- aggregate(. ~ EVTYPE, data=csv[,c('EVTYPE', 'FATALITIES', 'INJURIES')], FUN=mean)
 ```
 
-Top ten event types by fatalities and injuries are handled separately.
+Because the number of different event types is large, only ten most harmful ones fatality- and injury-wise are visualised. The top ten is collected separately for both health impacts, because their numbers don't always correlate with each other.
+
 ```{r cache=TRUE}
 pickTopTen <- function(data, columnIndex) {
   head(data[order(-data[,c(columnIndex)]),], 10)
 }
 topFatalitiesSumByEventType <- pickTopTen(fatalitiesAndInjuriesSumByEventType, 2)
 topInjuriesSumByEventType <- pickTopTen(fatalitiesAndInjuriesSumByEventType, 3)
-topFatalitiesMeanByEventType <- pickTopTen(fatalitiesAndInjuriesMeanByEventType, 2)
-topInjuriesMeanByEventType <- pickTopTen(fatalitiesAndInjuriesMeanByEventType, 3)
 ```
 
-```{r}
-```
-
-While investigating storms' economical impact, the same aggregation is carried over property and crop damage expenditures after multiplying costs by respective exponent.
+While investigating events' economical impact, similar aggregation is carried over total property and crop damage expenditures. The economical impact is in original data in two parts (numeric and exponent), and following also multiplies damages by the exponent.
 
 ```{r cache=TRUE}
 csv$PROPDMGEXP <- revalue(csv$PROPDMGEXP, c("K"=1000, "M"=1000000, "B"=1000000000), warn_missing = FALSE)
@@ -56,28 +45,34 @@ csv$CROPDMGEXP <- revalue(csv$CROPDMGEXP, c("K"=1000, "M"=1000000, "B"=100000000
 suppressWarnings(csv$PROPDMG <- csv$PROPDMG * as.integer(as.character(csv$PROPDMGEXP)))
 suppressWarnings(csv$CROPDMG <- csv$CROPDMG * as.integer(as.character(csv$CROPDMGEXP)))
 damagesSumByEventType <- aggregate(. ~ EVTYPE, data=csv[,c('EVTYPE', 'PROPDMG', 'CROPDMG')], FUN=sum)
-damagesMeanByEventType <- aggregate(. ~ EVTYPE, data=csv[,c('EVTYPE', 'PROPDMG', 'CROPDMG')], FUN=mean)
 ```
 
-Top ten event types by economical damages caused by storms are sorted by sum of property and crop damages.
+Top ten event types by economical damages are then sorted by sum of the damage types.
 
 ```{r cache=TRUE}
 damagesSumByEventType$SUM <- damagesSumByEventType$PROPDMG + damagesSumByEventType$CROPDMG
-damagesMeanByEventType$MEAN <- damagesMeanByEventType$PROPDMG + damagesMeanByEventType$CROPDMG
-
 topDamagesSumByEventType <- pickTopTen(damagesSumByEventType, 4)
-topDamagesMeanByEventType <- pickTopTen(damagesMeanByEventType, 4)
+```
+
+Finally the helper (combined sum) variable is removed, the data is made narrow (long) so it is suitable for ggplot2's stacked bar chart, and also damage types are renamed.
+
+```{r cache=TRUE}
+topDamagesSumByEventType <- topDamagesSumByEventType[, c('EVTYPE', 'PROPDMG', 'CROPDMG')]
+topDamagesSumByEventType <- melt(topDamagesSumByEventType, id=c("EVTYPE")) 
+levels(topDamagesSumByEventType$variable)[levels(topDamagesSumByEventType$variable)=="PROPDMG"] <- "Property"
+levels(topDamagesSumByEventType$variable)[levels(topDamagesSumByEventType$variable)=="CROPDMG"] <- "Crop"
 ```
 
 ## Results
 
 ### Personnel Damages
 
-First total number of personnel damages is inspected by plotting top ten causes of deaths and injuries as sum by event type.
+Following plot by total health impact shows that tornadoes are clearly the major cause of deaths. However, also excessive heat causes high number of fatalities, about one third compared to tornadoes. 
+
 
 ```{r}
-fatalitiesSumPlot <- ggplot(topFatalitiesSumByEventType[,c('EVTYPE', 'FATALITIES')], aes(x=EVTYPE, y=FATALITIES)) + geom_bar(stat="identity") + coord_flip() + ylab('Fatalities (sum)') + xlab('')
-injuriesSumPlot <- ggplot(topInjuriesSumByEventType[,c('EVTYPE', 'INJURIES')], aes(x=EVTYPE, y=INJURIES)) + geom_bar(stat="identity")  + coord_flip() + ylab('Injuries (sum)') + xlab('')
+fatalitiesSumPlot <- ggplot(topFatalitiesSumByEventType[,c('EVTYPE', 'FATALITIES')], aes(x=EVTYPE, y=FATALITIES)) + geom_bar(stat="identity") + coord_flip() + ylab('Fatalities (sum)') + xlab('') + ggtitle('Sum of fatalities by event type')
+injuriesSumPlot <- ggplot(topInjuriesSumByEventType[,c('EVTYPE', 'INJURIES')], aes(x=EVTYPE, y=INJURIES)) + geom_bar(stat="identity")  + coord_flip() + ylab('Injuries (sum)') + xlab('') + ggtitle('Sum of injuries by event type')
 layout <- matrix(seq(1, 2), ncol = 1, nrow = 2)
 grid.newpage()
 pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
@@ -85,34 +80,17 @@ print(fatalitiesSumPlot, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
 print(injuriesSumPlot, vp = viewport(layout.pos.row = 2, layout.pos.col = 1))
 ```
 
-Then the personnel damages are inspected by plotting mean of top ten causes of deaths and injuries as mean by event type.
-
-```{r}
-fatalitiesMeanPlot <- ggplot(topFatalitiesMeanByEventType[,c('EVTYPE', 'FATALITIES')], aes(x=EVTYPE, y=FATALITIES)) + geom_bar(stat="identity") + coord_flip() + ylab('Fatalities (mean)') + xlab('')
-injuriesMeanPlot <- ggplot(topInjuriesMeanByEventType[,c('EVTYPE', 'INJURIES')], aes(x=EVTYPE, y=INJURIES)) + geom_bar(stat="identity")  + coord_flip() + ylab('Injuries (mean)') + xlab('')
-layout <- matrix(seq(1, 2), ncol = 1, nrow = 2)
-grid.newpage()
-pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
-print(fatalitiesMeanPlot, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
-print(injuriesMeanPlot, vp = viewport(layout.pos.row = 2, layout.pos.col = 1))
-```
-
-From the plots is very easy to see that tornadoes are main cause of fatalities and injuries. They have highest effect on health when viewed as sum and mean. However, also extreme heat causes high number of fatalities, about one third compared to tornadoes. 
-
-When investigating mean values by event type, cold and snow becomes second to tornadoes by reaching slightly over half of their fatality level. Somewhat surprisingly heat wave is clearly most significant cause of injuries by singular event. Obviously tornadoes are more numerous than "cold and snow" or "heat wave" that cause injuries or fatalities.
+It would be interesting to investigate severity of the injuries: for example do tornadoes cause mostly light and easily treatable injuries, or more severe ones with significant economical impact in addition to the effect they have on victims' quality of life.
 
 ### Damages
 
-Damages are investigates by plotting sum and mean of combined property and crop damages by top ten event types.
+Damages are investigated by plotting sum of combined property and crop damages by top ten event types.
 
 ```{r}
-damagesSumPlot <- ggplot(topDamagesSumByEventType[,c('EVTYPE', 'SUM')], aes(x=EVTYPE, y=SUM)) + geom_bar(stat="identity") + coord_flip() + ylab('Damages (sum)') + xlab('')
-damagesMeanPlot <- ggplot(topDamagesMeanByEventType[,c('EVTYPE', 'MEAN')], aes(x=EVTYPE, y=MEAN)) + geom_bar(stat="identity") + coord_flip() + ylab('Damages (mean)') + xlab('')
-layout <- matrix(seq(1, 2), ncol = 1, nrow = 2)
-grid.newpage()
-pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
-print(damagesSumPlot, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
-print(damagesMeanPlot, vp = viewport(layout.pos.row = 2, layout.pos.col = 1))
+damagesSumPlot <- ggplot(topDamagesSumByEventType, aes(x=factor(EVTYPE), y=value, fill=variable)) + geom_bar(stat="identity") + coord_flip() + ylab('Cost (USD)') + xlab('') + scale_fill_discrete('Damage type')  + ggtitle('Damages by event type')
+print(damagesSumPlot)
 ```
 
-Floods clearly cause majority of damages, but on average tornadoes are more damaging to economy; floods accumulate damage by their numbers. The statistics could be analysed further by location of the events, for example do floods repeatedly concentrate on single areas and whether it would be feasible to prevent damages by building flood barries or safe overflow areas.
+Floods cause most of damages, and compared to that tornadoes have a small economical impact. The differing economical and health effects could be caused by events' nature: floods are generally slower and leave more time to evacuate people, while tornadoes are sudden and violent events.
+
+The statistics could be analysed further by location of the events, for example do floods repeatedly concentrate on single areas and whether it would be feasible to prevent damages by building flood barries or safe overflow areas. It is also worth noting that, except for river floods and ice storms, crop damages are small compared to property damages.
